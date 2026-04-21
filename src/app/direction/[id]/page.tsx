@@ -5,6 +5,7 @@ export function generateStaticParams() {
   return DIRECTION_IDS.map((id) => ({ id }));
 }
 
-export default function DirectionPage({ params }: { params: { id: string } }) {
-  return <DirectionPageClient id={params.id} />;
+export default async function DirectionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <DirectionPageClient id={id} />;
 }
