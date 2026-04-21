@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans, Arial, sans-serif);
+}
+
+/* Scope gantt-task-react styles to avoid Tailwind preflight conflicts */
+.gantt-wrapper * {
+  box-sizing: content-box;
+}
+
+.gantt-wrapper .bar-wrapper,
+.gantt-wrapper ._3T42e {
+  cursor: pointer;
+}
