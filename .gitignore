@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /out/
+__next.*.txt
+index.txt
 
 # production
 /build
