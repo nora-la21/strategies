@@ -1,10 +1,14 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { DashboardData, Direction, Task } from '@/types';
-import { readStorage, writeStorage } from '@/hooks/useLocalStorage';
 import { getSeedData } from '@/lib/seed';
 import { v4 as uuidv4 } from 'uuid';
+
+const SCHEMA_VERSION = 2;
+const DOC_REF = () => doc(db, 'dashboard', 'main');
 
 interface DataContextValue {
   data: DashboardData;
@@ -21,34 +25,55 @@ const DataContext = createContext<DataContextValue | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const stored = readStorage();
-    // Reseed if missing, empty, or schema changed (e.g. old data had random UUIDs)
-    const SCHEMA_VERSION = 2;
-    if (stored && stored.directions.length > 0 && stored.schemaVersion === SCHEMA_VERSION) {
-      setData(stored);
-    } else {
-      const seed = { ...getSeedData(), schemaVersion: SCHEMA_VERSION };
-      writeStorage(seed);
-      setData(seed);
+  // Write to Firestore
+  const persist = useCallback(async (next: DashboardData) => {
+    setData(next); // optimistic update
+    try {
+      await setDoc(DOC_REF(), next);
+    } catch (e) {
+      console.error('Firestore write failed', e);
     }
   }, []);
 
-  const persist = useCallback((next: DashboardData) => {
-    setData(next);
-    writeStorage(next);
+  useEffect(() => {
+    let initialised = false;
+
+    // Subscribe to real-time updates
+    const unsub = onSnapshot(
+      DOC_REF(),
+      async (snap) => {
+        if (snap.exists()) {
+          const stored = snap.data() as DashboardData;
+          if (stored.schemaVersion === SCHEMA_VERSION) {
+            setData(stored);
+            initialised = true;
+            return;
+          }
+        }
+        // First load or schema mismatch → seed
+        if (!initialised) {
+          initialised = true;
+          const seed = { ...getSeedData(), schemaVersion: SCHEMA_VERSION };
+          await setDoc(DOC_REF(), seed);
+          setData(seed);
+        }
+      },
+      (err) => {
+        console.error('Firestore snapshot error', err);
+        setError('Could not connect to database. Check Firestore is enabled.');
+      }
+    );
+
+    return () => unsub();
   }, []);
 
   const addDirection = useCallback(
     (dir: Omit<Direction, 'id' | 'tasks'>): Direction => {
       if (!data) throw new Error('Data not loaded');
       const newDir: Direction = { ...dir, id: uuidv4(), tasks: [] };
-      persist({
-        ...data,
-        lastUpdated: new Date().toISOString(),
-        directions: [...data.directions, newDir],
-      });
+      persist({ ...data, lastUpdated: new Date().toISOString(), directions: [...data.directions, newDir] });
       return newDir;
     },
     [data, persist]
@@ -125,14 +150,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const resetToSeed = useCallback(() => {
-    const seed = { ...getSeedData(), schemaVersion: 2 };
+    const seed = { ...getSeedData(), schemaVersion: SCHEMA_VERSION };
     persist(seed);
   }, [persist]);
 
+  if (error) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-gray-50 p-8 text-center">
+        <p className="text-red-600 font-medium">{error}</p>
+        <p className="text-sm text-gray-500">
+          Make sure Firestore Database is created in your Firebase console (test mode).
+        </p>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-gray-50">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+        <p className="text-sm text-gray-500">Connecting to database…</p>
       </div>
     );
   }
