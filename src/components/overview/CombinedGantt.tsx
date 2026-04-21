@@ -171,26 +171,27 @@ export default function CombinedGantt({ directions }: Props) {
         </div>
 
         {/* Legend */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-gray-400">
-          <div className="flex items-center gap-1">
-            <div className="h-2 w-3 rounded-sm bg-gray-300" />
-            To do
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[10px] text-gray-400 border-t border-gray-100 pt-3">
+          <span className="text-gray-400 font-medium">Bar shade = status:</span>
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: '#6366f166' }} />
+            <span>To do</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="h-2 w-3 rounded-sm bg-indigo-400 opacity-80" />
-            In progress
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: '#6366f1cc' }} />
+            <span>In progress</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="h-2 w-3 rounded-sm bg-indigo-500" />
-            Done
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: '#6366f1' }} />
+            <span>Done</span>
           </div>
-          <div className="flex items-center gap-1 ml-2">
-            <div className="h-3 w-0.5 bg-indigo-400" />
-            Today
+          <div className="flex items-center gap-1.5 ml-2">
+            <div className="h-3.5 w-0.5 bg-indigo-400" />
+            <span>Today</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-px bg-slate-300" />
-            Key date
+          <div className="flex items-center gap-1.5">
+            <div className="h-3.5 w-px bg-slate-300" />
+            <span>Key date</span>
           </div>
         </div>
 
