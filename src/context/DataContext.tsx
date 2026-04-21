@@ -60,7 +60,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (!initialised) {
           initialised = true;
           const seed = { ...getSeedData(), schemaVersion: SCHEMA_VERSION };
-          await setDoc(DOC_REF(), seed);
+          const clean = JSON.parse(JSON.stringify(seed));
+          await setDoc(DOC_REF(), clean);
           setData(seed);
         }
       },
