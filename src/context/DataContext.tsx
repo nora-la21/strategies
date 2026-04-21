@@ -24,10 +24,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = readStorage();
-    if (stored && stored.directions.length > 0) {
+    // Reseed if missing, empty, or schema changed (e.g. old data had random UUIDs)
+    const SCHEMA_VERSION = 2;
+    if (stored && stored.directions.length > 0 && stored.schemaVersion === SCHEMA_VERSION) {
       setData(stored);
     } else {
-      const seed = getSeedData();
+      const seed = { ...getSeedData(), schemaVersion: SCHEMA_VERSION };
       writeStorage(seed);
       setData(seed);
     }
@@ -123,7 +125,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const resetToSeed = useCallback(() => {
-    const seed = getSeedData();
+    const seed = { ...getSeedData(), schemaVersion: 2 };
     persist(seed);
   }, [persist]);
 

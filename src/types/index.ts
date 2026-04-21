@@ -21,6 +21,7 @@ export interface Direction {
 export interface DashboardData {
   directions: Direction[];
   lastUpdated: string;
+  schemaVersion?: number;
 }
 
 export interface GanttTask {

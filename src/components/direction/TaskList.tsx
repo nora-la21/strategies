@@ -6,16 +6,14 @@ import { Direction } from '@/types';
 import TaskRow from './TaskRow';
 import TaskModal from '@/components/modals/TaskModal';
 
-type ColumnKey = 'start' | 'end' | 'status' | 'assignee';
+type ColumnKey = 'status' | 'assignee';
 
 const ALL_COLUMNS: { key: ColumnKey; label: string }[] = [
-  { key: 'start', label: 'Start date' },
-  { key: 'end', label: 'End date' },
   { key: 'status', label: 'Status' },
   { key: 'assignee', label: 'Assignee' },
 ];
 
-const DEFAULT_VISIBLE = new Set<ColumnKey>(['start', 'end', 'status', 'assignee']);
+const DEFAULT_VISIBLE = new Set<ColumnKey>(['status', 'assignee']);
 
 export default function TaskList({ direction }: { direction: Direction }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -33,7 +31,6 @@ export default function TaskList({ direction }: { direction: Direction }) {
       return next;
     });
 
-  // Close picker on outside click
   useEffect(() => {
     if (!showColPicker) return;
     const handler = (e: MouseEvent) => {
@@ -56,7 +53,6 @@ export default function TaskList({ direction }: { direction: Direction }) {
             </span>
           </h3>
           <div className="flex items-center gap-2">
-            {/* Column visibility toggle */}
             <div className="relative" ref={pickerRef}>
               <button
                 onClick={() => setShowColPicker((v) => !v)}
@@ -69,9 +65,14 @@ export default function TaskList({ direction }: { direction: Direction }) {
               >
                 <Columns2 size={13} /> Columns
               </button>
-
               {showColPicker && (
-                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                  <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                    Columns
+                  </p>
+                  <div className="px-3 pb-1 text-[10px] text-gray-400 border-b border-gray-100 mb-1">
+                    Dates: click 🗓 on each task
+                  </div>
                   {ALL_COLUMNS.map(({ key, label }) => (
                     <label
                       key={key}
@@ -116,8 +117,6 @@ export default function TaskList({ direction }: { direction: Direction }) {
               <thead>
                 <tr className="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                   <th className="py-2.5 pl-4 pr-3">Task</th>
-                  {visible.has('start') && <th className="px-3 py-2.5">Start</th>}
-                  {visible.has('end') && <th className="px-3 py-2.5">End</th>}
                   {visible.has('status') && <th className="px-3 py-2.5">Status</th>}
                   {visible.has('assignee') && <th className="px-3 py-2.5">Assignee</th>}
                   <th className="px-3 py-2.5" />
