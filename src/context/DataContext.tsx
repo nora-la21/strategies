@@ -28,11 +28,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [timedOut, setTimedOut] = useState(false);
 
-  // Write to Firestore
+  // Write to Firestore — JSON round-trip strips undefined values which Firestore rejects
   const persist = useCallback(async (next: DashboardData) => {
     setData(next); // optimistic update
     try {
-      await setDoc(DOC_REF(), next);
+      const clean = JSON.parse(JSON.stringify(next));
+      await setDoc(DOC_REF(), clean);
     } catch (e) {
       console.error('Firestore write failed', e);
     }
