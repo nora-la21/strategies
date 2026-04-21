@@ -25,8 +25,8 @@ export default function GanttInner({ tasks, onDateChange, viewMode = ViewMode.We
       <Gantt
         tasks={tasks as never}
         viewMode={viewMode}
-        listCellWidth="220px"
-        columnWidth={viewMode === ViewMode.Day ? 40 : viewMode === ViewMode.Week ? 120 : 200}
+        listCellWidth=""
+        columnWidth={viewMode === ViewMode.Day ? 40 : viewMode === ViewMode.Week ? 60 : 120}
         onDateChange={
           onDateChange
             ? (task: { id: string; start: Date; end: Date }) =>
