@@ -18,6 +18,19 @@ function spanPct(start: string, end: string): number {
   return Math.max(0.5, pct(end) - pct(start));
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function taskColor(hex: string, status: string): string {
+  if (status === 'done') return hex;
+  if (status === 'in_progress') return hexToRgba(hex, 0.75);
+  return hexToRgba(hex, 0.45);
+}
+
 // Build month tick marks
 function monthTicks() {
   const ticks: { label: string; pct: number }[] = [];
@@ -126,12 +139,7 @@ export default function CombinedGantt({ directions }: Props) {
                       style={{
                         left: `${pct(task.startDate)}%`,
                         width: `${spanPct(task.startDate, task.endDate)}%`,
-                        backgroundColor:
-                          task.status === 'done'
-                            ? dir.color
-                            : task.status === 'in_progress'
-                            ? dir.color + 'cc'
-                            : dir.color + '66',
+                        backgroundColor: taskColor(dir.color, task.status),
                       }}
                       onMouseEnter={(e) => {
                         const rect = (e.currentTarget.closest('.relative.flex-1') as HTMLElement)?.getBoundingClientRect();
@@ -174,11 +182,11 @@ export default function CombinedGantt({ directions }: Props) {
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[10px] text-gray-400 border-t border-gray-100 pt-3">
           <span className="text-gray-400 font-medium">Bar shade = status:</span>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: '#6366f166' }} />
+            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: 'rgba(99,102,241,0.45)' }} />
             <span>To do</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: '#6366f1cc' }} />
+            <div className="h-3 w-8 rounded-sm" style={{ backgroundColor: 'rgba(99,102,241,0.75)' }} />
             <span>In progress</span>
           </div>
           <div className="flex items-center gap-1.5">
