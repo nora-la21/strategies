@@ -20,9 +20,10 @@ interface Props {
   task: Task;
   directionId: string;
   color: string;
+  visibleCols: Set<string>;
 }
 
-export default function TaskRow({ task, directionId, color }: Props) {
+export default function TaskRow({ task, directionId, color, visibleCols }: Props) {
   const { updateTask, deleteTask } = useData();
   const [showEdit, setShowEdit] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -39,25 +40,33 @@ export default function TaskRow({ task, directionId, color }: Props) {
           </div>
           {task.notes && <p className="mt-0.5 pl-4 text-xs text-gray-400">{task.notes}</p>}
         </td>
-        <td className="whitespace-nowrap px-3 py-3 text-xs text-gray-500">
-          {formatDisplay(task.startDate)}
-        </td>
-        <td className="whitespace-nowrap px-3 py-3 text-xs text-gray-500">
-          {formatDisplay(task.endDate)}
-        </td>
-        <td className="px-3 py-3">
-          <button onClick={cycleStatus} className="hover:opacity-75 transition-opacity">
-            <Badge status={task.status} />
-          </button>
-        </td>
-        <td className="px-3 py-3">
-          {task.assignee && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <User size={12} />
-              {task.assignee}
-            </div>
-          )}
-        </td>
+        {visibleCols.has('start') && (
+          <td className="whitespace-nowrap px-3 py-3 text-xs text-gray-500">
+            {formatDisplay(task.startDate)}
+          </td>
+        )}
+        {visibleCols.has('end') && (
+          <td className="whitespace-nowrap px-3 py-3 text-xs text-gray-500">
+            {formatDisplay(task.endDate)}
+          </td>
+        )}
+        {visibleCols.has('status') && (
+          <td className="px-3 py-3">
+            <button onClick={cycleStatus} className="hover:opacity-75 transition-opacity">
+              <Badge status={task.status} />
+            </button>
+          </td>
+        )}
+        {visibleCols.has('assignee') && (
+          <td className="px-3 py-3">
+            {task.assignee && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <User size={12} />
+                {task.assignee}
+              </div>
+            )}
+          </td>
+        )}
         <td className="px-3 py-3">
           <div className="flex gap-1">
             <button
