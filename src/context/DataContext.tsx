@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DashboardData, Direction, Task } from '@/types';
 import { getSeedData } from '@/lib/seed';
@@ -26,6 +26,7 @@ const DataContext = createContext<DataContextValue | null>(null);
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
 
   // Write to Firestore
   const persist = useCallback(async (next: DashboardData) => {
@@ -39,11 +40,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let initialised = false;
+    const timeout = setTimeout(() => setTimedOut(true), 15000);
 
     // Subscribe to real-time updates
     const unsub = onSnapshot(
       DOC_REF(),
       async (snap) => {
+        clearTimeout(timeout);
         if (snap.exists()) {
           const stored = snap.data() as DashboardData;
           if (stored.schemaVersion === SCHEMA_VERSION) {
@@ -61,12 +64,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
       },
       (err) => {
+        clearTimeout(timeout);
         console.error('Firestore snapshot error', err);
-        setError('Could not connect to database. Check Firestore is enabled.');
+        setError(`Firestore error: ${err.code} — ${err.message}`);
       }
     );
 
-    return () => unsub();
+    return () => { unsub(); clearTimeout(timeout); };
   }, []);
 
   const addDirection = useCallback(
@@ -161,15 +165,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         <p className="text-sm text-gray-500">
           Make sure Firestore Database is created in your Firebase console (test mode).
         </p>
+        <button onClick={() => window.location.reload()} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">
+          Retry
+        </button>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-gray-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-        <p className="text-sm text-gray-500">Connecting to database…</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-8 text-center">
+        {!timedOut ? (
+          <>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <p className="text-sm text-gray-500">Connecting to database…</p>
+          </>
+        ) : (
+          <>
+            <p className="text-red-600 font-medium">Could not reach Firestore after 15 seconds.</p>
+            <div className="text-sm text-gray-500 space-y-1 max-w-md">
+              <p>Check the browser console (F12 → Console) for the exact error, then try:</p>
+              <ol className="text-left list-decimal list-inside space-y-1 mt-2">
+                <li>Firebase console → Firestore Database → confirm it shows <strong>Active</strong></li>
+                <li>Rules tab → confirm the rule allows reads until May 2026</li>
+                <li>Hard-refresh the page (Ctrl+Shift+R)</li>
+              </ol>
+            </div>
+            <button onClick={() => window.location.reload()} className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">
+              Retry
+            </button>
+          </>
+        )}
       </div>
     );
   }
