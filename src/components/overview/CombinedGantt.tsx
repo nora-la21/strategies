@@ -95,7 +95,7 @@ export default function CombinedGantt({ directions }: Props) {
             return (
               <Link
                 key={dir.id}
-                href={`/direction/${dir.id}`}
+                href={`/direction/?id=${dir.id}`}
                 className="group flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors"
               >
                 {/* Label */}

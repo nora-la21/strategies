@@ -14,7 +14,7 @@ export default function DirectionCard({ direction }: { direction: Direction }) {
       : null;
 
   return (
-    <Link href={`/direction/${direction.id}`} className="group block">
+    <Link href={`/direction/?id=${direction.id}`} className="group block">
       <div className="rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md hover:border-gray-300">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

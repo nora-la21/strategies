@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { LayoutDashboard, Plus } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import DirectionModal from '@/components/modals/DirectionModal';
 
-export default function Sidebar() {
+function SidebarInner() {
   const { data } = useData();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeId = searchParams.get('id');
   const [showAddDir, setShowAddDir] = useState(false);
 
   return (
@@ -44,11 +46,11 @@ export default function Sidebar() {
           </div>
 
           {data.directions.map((dir) => {
-            const isActive = pathname === `/direction/${dir.id}`;
+            const isActive = pathname.startsWith('/direction') && activeId === dir.id;
             return (
               <Link
                 key={dir.id}
-                href={`/direction/${dir.id}`}
+                href={`/direction/?id=${dir.id}`}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
                   isActive
                     ? 'bg-gray-100 text-gray-900 font-medium'
@@ -78,5 +80,13 @@ export default function Sidebar() {
 
       {showAddDir && <DirectionModal onClose={() => setShowAddDir(false)} />}
     </>
+  );
+}
+
+export default function Sidebar() {
+  return (
+    <Suspense>
+      <SidebarInner />
+    </Suspense>
   );
 }
